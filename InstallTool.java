@@ -69,22 +69,25 @@ public class InstallTool
 		}
 		else
 		{
-			firstPartition = "ext4 1 100%FREE";
+			firstPartition = "primary 1 100%FREE";
 		}
 		String installString = "timedatectl set-ntp true\n";
-		installString = installString + "parted /dev/" + theRootDisk + " mklabel " + tabletype + "\n";
-		installString = installString + "parted /dev/" + theRootDisk + " mkpart " + firstPartition + "\n";
+		installString += "parted /dev/" + theRootDisk + " mklabel " + tabletype + "\n";
+		installString += "parted /dev/" + theRootDisk + " mkpart " + firstPartition + "\n";
 		if (theBootMethod.equals("uefi"))
 		{
-			installString = installString + "parted /dev/" + theRootDisk + " mkpart ext4 512 100%FREE" + "\n";
-			installString = installString + "mount /dev/"+ theRootDisk+"2 /mnt\n";
-			installString = installString + "mkdir /mnt/boot\n";
-			installString = installString + "mkdir /mnt/boot/efi\n";
-			installString = installString + "mount /dev/" + theRootDisk + "1 /mnt/boot/efi\n";
+			installString += "parted /dev/" + theRootDisk + " mkpart ext4 512 100%FREE" + "\n";
+			installString += "mkfs.ext4 /dev/" + theRootDisk + "2\n";
+			installString += "mkfs.fat -F32 /dev/" + theRootDisk + "1\n";
+			installString += "mount /dev/"+ theRootDisk+"2 /mnt\n";
+			installString += "mkdir /mnt/boot\n";
+			installString += "mkdir /mnt/boot/efi\n";
+			installString += "mount /dev/" + theRootDisk + "1 /mnt/boot/efi\n";
 		}
 		else
 		{
-			installString = installString + "mount /dev/" + theRootDisk + "1 /mnt\n";
+			installString += "mkfs.ext4 /dev/" + theRootDisk + "1\n";
+			installString += "mount /dev/" + theRootDisk + "1 /mnt\n";
 
 
 		}
@@ -113,34 +116,34 @@ public class InstallTool
 		{
 			firmwareString = " linux-firmware";
 		}
-		installString = installString + "pacstrap /mnt base " + kernelString +firmwareString + "\n";
-		installString = installString + "genfstab -U /mnt >> /mnt/etc/fstab\n";
-		installString = installString + "arch-chroot /mnt timedatectl set-timezone America/Los_Angeles\n";
-		installString = installString + "arch-chroot /mnt echo en_US.UTF-8 UTF-8 > /etc/locale.gen\n";
-		installString = installString + "arch-chroot /mnt locale-gen\n";
-		installString = installString + "arch-chroot /mnt echo LANG=en_US.UTF-8 > /etc/locale.conf\n";
-		installString = installString + "arch-chroot /mnt echo " + theHostname + " > /etc/hostname\n";
-		installString = installString + "arch-chroot /mnt passwd\n";
+		installString += "pacstrap /mnt base " + kernelString +firmwareString + "\n";
+		installString += "genfstab -U /mnt >> /mnt/etc/fstab\n";
+		installString += "arch-chroot /mnt timedatectl set-timezone America/Los_Angeles\n";
+		installString += "arch-chroot /mnt echo en_US.UTF-8 UTF-8 > /etc/locale.gen\n";
+		installString += "arch-chroot /mnt locale-gen\n";
+		installString += "arch-chroot /mnt echo LANG=en_US.UTF-8 > /etc/locale.conf\n";
+		installString += "arch-chroot /mnt echo " + theHostname + " > /etc/hostname\n";
+		installString += "arch-chroot /mnt passwd\n";
 		if (theMicrocode.equals("y"))
 		{
-			installString = installString + "arch-chroot /mnt pacman -S intel-ucode amd-ucode\n";
+			installString += "arch-chroot /mnt pacman -S intel-ucode amd-ucode\n";
 		}
 		if (theBootMethod.equals("uefi"))
 		{
-			installString = installString + "arch-chroot /mnt pacman -S grub efibootmgr\n";
-			installString = installString + "arch-chroot /mnt grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi\n";
+			installString += "arch-chroot /mnt pacman -S grub efibootmgr\n";
+			installString += "arch-chroot /mnt grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi\n";
 
 		}
 		else
 		{
-			installString = installString + "arch-chroot /mnt pacman -S grub\n";
-			installString = installString + "arch-chroot /mnt grub-install /dev/" + theRootDisk+"\n";
+			installString += "arch-chroot /mnt pacman -S grub\n";
+			installString += "arch-chroot /mnt grub-install /dev/" + theRootDisk+"\n";
 
 		}
-		installString = installString + "arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg\n";
-		installString = installString + "arch-chroot /mnt pacman -S networkmanager\n";
-		installString = installString + "arch-chroot /mnt systemctl enable NetworkManager\n";
-		installString = installString + "echo Installation Finished!\n";
+		installString += "arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg\n";
+		installString += "arch-chroot /mnt pacman -S networkmanager\n";
+		installString += "arch-chroot /mnt systemctl enable NetworkManager\n";
+		installString += "echo Installation Finished!\n";
 		
 
 		return installString;
