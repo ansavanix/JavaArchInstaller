@@ -172,7 +172,7 @@ public class InstallTool
 		String kernel = t1.ask("kernel","regular/lts/hardened/zen");
 		String firmware = t1.ask("if proprietary firmware is needed","y/n");
 		String hostname = t1.ask("hostname/computer name","Example: ArchComputer");
-		String microcode = t1.ask("microcode updates","y/n");
+		String microcode = t1.ask("if microcode updates are need","y/n");
 		System.out.println("Creating installation shell script...");
 		String script = t1.createInstallString(rootDisk,bootMethod,kernel,firmware,hostname,microcode);
 		t1.writeInstallScript(script);
