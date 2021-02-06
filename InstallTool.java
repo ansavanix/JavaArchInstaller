@@ -51,7 +51,7 @@ public class InstallTool
 		}
 		return confirmed;
 	}
-	public String createInstallString(String theRootDisk,String theBootMethod,String theKernel,String theFirmware,String theHostname, String theMicrocode)
+	public String createInstallString(String theRootDisk,String theBootMethod,String theKernel,String theFirmware,String theHostname, String theMicrocode, String theUser, String theUsername)
 	{
 		String tabletype;
 		if (theBootMethod.equals("uefi"))
@@ -116,17 +116,26 @@ public class InstallTool
 		{
 			firmwareString = " linux-firmware";
 		}
-		installString += "pacstrap /mnt base " + kernelString +firmwareString + "\n";
+		installString += "pacstrap /mnt base " + kernelString +firmwareString + " nano\n";
 		installString += "genfstab -U /mnt >> /mnt/etc/fstab\n";
 		installString += "arch-chroot /mnt timedatectl set-timezone America/Los_Angeles\n";
-		installString += "arch-chroot /mnt echo en_US.UTF-8 UTF-8 > /etc/locale.gen\n";
+		installString += "echo en_US.UTF-8 UTF-8 > /mnt/etc/locale.gen\n";
 		installString += "arch-chroot /mnt locale-gen\n";
-		installString += "arch-chroot /mnt echo LANG=en_US.UTF-8 > /etc/locale.conf\n";
-		installString += "arch-chroot /mnt echo " + theHostname + " > /etc/hostname\n";
+		installString += "echo LANG=en_US.UTF-8 > /mnt/etc/locale.conf\n";
+		installString += "echo " + theHostname + " > /mnt/etc/hostname\n";
 		installString += "arch-chroot /mnt passwd\n";
 		if (theMicrocode.equals("y"))
 		{
 			installString += "arch-chroot /mnt pacman -S intel-ucode amd-ucode\n";
+		}
+		if (theUser.equals("y"))
+		{
+			installString += "arch-chroot /mnt pacman -S sudo\n";
+			installString += "arch-chroot /mnt useradd -m " + theUsername + "\n";
+			installString += "arch-chroot /mnt usermod -a -G wheel " + theUsername + "\n"; 
+			installString += "echo '%wheel ALL=(ALL) ALL' > /mnt/etc/sudoers.d/wheel\n";
+			installString += "arch-chroot /mnt passwd " + theUsername + "\n";
+			
 		}
 		if (theBootMethod.equals("uefi"))
 		{
@@ -173,12 +182,17 @@ public class InstallTool
 		String firmware = t1.ask("if proprietary firmware is needed","y/n");
 		String hostname = t1.ask("hostname/computer name","Example: ArchComputer");
 		String microcode = t1.ask("if microcode updates are need","y/n");
+		String user = t1.ask("Create a user with administrator priveleges?","y/n");
+		String username = "none";
+		if (user.equals("y"))
+		{
+			username = t1.ask("Username?", "Example: archuser");
+		}
 		System.out.println("Creating installation shell script...");
-		String script = t1.createInstallString(rootDisk,bootMethod,kernel,firmware,hostname,microcode);
+		String script = t1.createInstallString(rootDisk,bootMethod,kernel,firmware,hostname,microcode,user,username);
 		t1.writeInstallScript(script);
 		
 	}
 }
-
 
 
